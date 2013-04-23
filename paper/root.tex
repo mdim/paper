@@ -48,11 +48,14 @@ Tabletop Object Scanning with an RGB-D Sensor*
 %         {\tt\small pmisra@cs.wright.edu}}
 %}
 
-\author{Maria Dimashova$^{1}$ and Ilya Lysenkov$^{1}$
+\author{Maria Dimashova$^{1}$, Ilya Lysenkov$^{1}$ and  Vincent Rabaud$^{2}$
 \thanks{*This work was supported by Willow Garage, Inc.}% <-this % stops a space
-\thanks{$^{1}$All authors are with Itseez, Nizhny Novgorod, Russia
+\thanks{$^{1}$M. Dimashova and I. Lysenkov are with Itseez, Nizhny Novgorod, Russia
         {\tt\small \{maria.dimashova, ilya.lysenkov\}@itseez.com}}%
+\thanks{$^{2}$V. Rabaud is with {\tt\small }}%
+%\TODO fill Vincent's info
 %\TODO ask Vincent to be a co-author
+%\TODO also ask Victor to be a co-author
 }
 
 
@@ -357,7 +360,7 @@ We filter out such outliers:
 \begin{enumerate}
  \item If a returned transformation between two frames is beyond the basin of convergence
  of the RGB-D odometry (about 15cm and 15 degrees in our experiments) most likely it is an outlier.
- \item We also wrap a source frame using an estimated transformation,
+ \item We also warp a source frame using an estimated transformation,
  compute the difference between target and warped frames 
  and filter the transformation out if
  depth and intensity differences are large for many pixels.
