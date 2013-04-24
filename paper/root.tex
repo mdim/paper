@@ -71,16 +71,17 @@ Tabletop Object Scanning with an RGB-D Sensor*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
 The paper presents a complete pipeline for tabletop object scanning
-which gives accurate 3D models from RGB-D sensor data and can be carried out both by a person
+which creates accurate 3D models from RGB-D sensor data and can be carried out both by a person
 and a robot. We consider the capturing scenario when a camera makes
+%TODO maybe "a capturing scenario" or "capturing scenario"?
 one turn around a table with an object. The online part of our approach consists 
 of initial camera motion estimation using RGB-D visual
 odometry and detection of loop closure in the trajectory. The offline part
 is graph-based global refinement of camera poses and model points.
 %simultaneously what was previously shown gives the higher accuracy of models. 
-We propose to perform global graph optimization in a coarse-to-fine scheme to 
-increase its basin of convergence what is often used in odometry algorithms. 
-In addition to usual ICP constraints we also enhanced a global cost function 
+We perform global graph optimization in a coarse-to-fine scheme to 
+increase its basin of convergence like often done in odometry algorithms. 
+In addition to usual ICP constraints we also enhanced global cost function 
 by constraints from RGB data to make the scanning pipeline more stable in case 
 of planar and symmetric surfaces. 
 
@@ -123,9 +124,9 @@ they use knowledge about an object pose from a robot manipulator
 that holds it. Such information is not available in case of a person hand
 and even a vision-based hand tracking will not help with the problem of symmetric
 objects in all cases at least due to occlusions of a hand by scanned objects. 
-So in-hand scanning doesn't suit for our goal,
-creating a general scanning pipeline which can be used both by people and robots,
-and we use a table for scanning.
+So in-hand scanning doesn't meet our goal of
+creating a general scanning pipeline which can be used both by people and robots.
+We use a table for scanning.
 %TODO we don't describe why we need a system suitable both a person and a robot.
 
 
@@ -176,31 +177,32 @@ and we use a table for scanning.
 Probably the most common tabletop object scanning setup in computer 
 %TODO: ref, proof
 vision or robotics laboratories is a table or a turntable with
-visual markers on it (e.g. chessboards) which
+visual markers on it (e.g. chessboards) that
 are used for the camera pose estimation and can be applied for 
 an object segmentation too. \cite{ectoObjectRecognitionCapture} also 
 provides an option to replace special visual markers by arbitrary texture. 
 But in this case there is a training stage for textured visual features:
 the user has to capture a canonical image of the empty table from
 a planar frontal view before scanning. Preparing the markers
-and a training stage for texture are inconvenient for a person and
+and the training stage for texture is inconvenient for a human and
 hard or impossible for a robot. 
 
-Our approach also requires arbitrary
+Our approach also requires 
 texture on a table at our scanning setup. For the camera motion estimation 
 we use state-of-the-art dense RGB-D odometry algorithm \cite{steinbrucker2011real} 
 instead of feature-based tracking 
-and it allows us to eliminate a training stage.
+and it allows us to eliminate the training stage.
 We can not abandon the requirement of texture because the depth-based
 techniques for the camera motion estimation like ICP \cite{besl1992method} 
-are not reliable in scenes with the dominant plane \cite{rusinkiewicz2001efficient} which we have.
+are not reliable in scenes with the dominant plane \cite{rusinkiewicz2001efficient} 
+that we want to handle.
 
 
 For the same reason
 the impressive technique KinectFusion \cite{newcombe2011kinectfusion} 
 which uses ICP for camera poses estimation can not be applied in our capturing setup.
 Usage of KinectFusion without a table plane or intentionally cluttered table 
-returns to the problem of automatic object segmentation.
+puts us back to the problem of automatic object segmentation.
 Also KinectFusion smooths captured surfaces too much, \cite{meister2012when} measured that
 the system can resolve object details with a minimum size of approximately 10mm.
 % TODO "measured that the system can resolve object details with a minimum size of approximately 10mm" is a copy-paste 
@@ -252,7 +254,7 @@ in Fig.~\ref{fig:tizer}).
 The goal of our scanning pipeline is to produce an accurate 3D model
 of an object captured by a person or a robot.
 In order to achieve this goal, we
-impose restrictions on a scanning setup and process: it should be
+impose restrictions on the scanning setup and process: it should be
 one turn of an RGB-D camera around a textured table with an object. 
 
 A textured table allows solving the following problems:
@@ -261,19 +263,19 @@ A textured table allows solving the following problems:
 
 \item \textit{Automatic object segmentation}. It is easy to find the table plane
 in a scene and segment an object placed on the table using RGB-D data.
-\item \textit{Stable camera pose estimation}. Due to presence of texture
+\item \textit{Stable camera pose estimation}. Due to the presence of texture
 a state-of-the-art RGB-D visual odometry algorithm can be applied.
 Alternative dense visual odometry methods based only on depth measurements
 like ICP are not reliable in a scene with a prevalent plane \cite{rusinkiewicz2002real}
 because such algorithms need rich 3D structures for registration but a plane is too homogeneous
 (it is like trying to match textureless objects by looking for textured 2D features).
 Both dense approaches
-suppose a static scene and they can tolerate only slight movements in the scene.
+assume a static scene and they can tolerate only slight movements in the scene.
 So to obtain a stable camera motion estimation we run the odometry using only
 %TODO: replace "can be considered static" with "are static"
-points of a table and an object because they can be considered static.
+points of the table and the object because they can be considered static.
 It allows applying the algorithm in dynamic scenes where there are moving objects e.g. people, pets or robots.
-\item \textit{Scanning symmetric textureless objects}. Registration of scans of such an object
+\item \textit{Scanning symmetric textureless objects}. Registration of scans for such an object
 is most likely to fail if it uses object points only. So an object pose should be known beforehand like in \cite{krainin2011manipulator}
 or some part of a scene with
 texture or 3D features should also be used to add sufficient constraints.
@@ -287,8 +289,8 @@ and so the algorithm is able to create models of symmetric textureless objects.
 %of an odometry.
 
 One turn around the table simplifies loop closure detection and poses graph construction
-in contrast to an arbitrary camera trajectory
-and so makes the algorithm more robust because setting incorrect associations
+in contrast to an arbitrary camera trajectory.
+Hence it makes the algorithm more robust because setting incorrect associations
 in the graph can lead to catastrophic implications in the offline graph
 optimization \cite{sunderhauf2012switchable}.
 However, a complex object may require a more complicated trajectory
@@ -307,7 +309,7 @@ maximally consistent to the pure odometry estimations without
 considering the RGB-D frames data. The input camera poses of this stage
 are estimated by frame-to-frame odometry and this produces drift: 
 the farther a camera pose is from the starting position of the trajectory, 
-the larger an error of its estimation becomes. The drift is compensated
+the larger the error of its estimation becomes. The drift is compensated
 by applying the constraint from the detected loop closure 
 that redistributes the accumulated error among the poses evenly.
 
@@ -358,7 +360,7 @@ because of light changes and motion blur from hand jitter.
 We filter out such outliers:
 
 \begin{enumerate}
- \item If a returned transformation between two frames is beyond the basin of convergence
+ \item If a returned transformation between two frames is outside the basin of convergence
  of the RGB-D odometry (about 15cm and 15 degrees in our experiments) most likely it is an outlier.
  \item We also warp a source frame using an estimated transformation,
  compute the difference between target and warped frames 
@@ -376,12 +378,12 @@ The used criterion is translation and rotation thresholds
 between a current frame and the last keyframe.
 
 The frame-to-frame estimation of camera poses from the RGB-D 
-odometry results in drift. It is usually not too large in our case
+odometry results in a drift. It is usually not too large in our case
 due to high accuracy of the used odometry method \cite{steinbrucker2011real}
 and only one turn around a table.
 But it still should be compensated and the loop closure event is detected to solve this problem.
 %TODO: how much is "large enough"?
-When length of the trajectory is large enough, we begin to estimate the
+When the length of the trajectory is large enough, we begin to estimate the
 odometry transformation between each current frame and the starting one. 
 If the returned transformation passes through the described filters, 
 this means the current pose is close to the first one and 
@@ -424,7 +426,7 @@ camera poses as well as points of scans to get a model maximally
 consistent with the captured RGB-D data. We achieve this in three steps by 
 solving least squares optimization problems. The cost function is extended at each step 
 by introducing additional terms which can be reliably computed
-thanks to refinement from a previous stage.
+thanks to refinement from the previous stage.
 
 %TODO is it clear that constrains are the same but they are with new data (new corresps, etc.)?
 
@@ -478,17 +480,19 @@ with regard to camera poses $x_{1:N}$:
 F_{SE3}(x_{1:N}) = \sum_n (z_n \ominus y_n)^T \Omega_{SE3} (z_n \ominus y_n),
 \end{equation}
 where $\ominus$ is the inverse compounding operator \cite{lu1997globally},
+%TODO give definition of the operator in text?
 $y_n=x_{n+1} \ominus x_{n}$ ($n=1,\dots, N-1$), $y_N=x_N \ominus x_1$,
 the matrix $\Omega_{SE3}$ is an information matrix that weighs an odometry uncertainty \cite{kuemmerle2011g2o}.
+%TODO say that it's diagonal matrix here?
 
-The first step does not use directly RGB-D information of the frames and they are
+The first step does not use RGB-D information of the frames directly and they are
 still slightly misaligned. So an RGB-D term is added to refine the camera poses at the second step 
 to achieve better consistency among all RGB-D scans.
 The first step improved accuracy of poses by exploiting the loop closure event.
 So corresponding points between two frames can be found now by using
 the fast projective data association algorithm \cite{rusinkiewicz2001efficient}.
-Two kinds of terms are added for each pair of corresponding 3D points of each frames pair
-to minimize their 3D distances and intensity difference.
+Two kinds of terms are added for each pair of corresponding 3D points from each pair of frames
+to minimize their 3D distances and image intensity difference.
 
 We use a common notation: $p_{nk}$ denotes $k^{th}$ 3D point of 
 the $n^{th}$ frame. So the cost function responsible for the shape consistency is
@@ -499,9 +503,11 @@ a sum of the ICP odometry terms:
 \begin{equation}
     \Delta p_{nmij}=(p_{ni} \oplus x_n) \ominus x_m - p_{mj},
 \end{equation}
-where summation is done over all corresponding points and $\Omega_{mj}$ is 
-an information matrix that results in the point-to-plane 
+where the summation is done over all corresponding points, $\oplus$ is 
+the compounding operator \cite{lu1997globally} and $\Omega_{mj}$ is 
+the information matrix that results in the point-to-plane 
 distances in \eqref{eq:ficp}.
+%TODO clarify this?
 
 \begin{figure}[t]
 	\centering
@@ -517,10 +523,10 @@ distances in \eqref{eq:ficp}.
                 \includegraphics[width=\linewidth]{../models/pr2_holes.png}
                 \caption{}
         \end{subfigure}
-        \caption{Example of the problem with holes in a model point cloud 
+        \caption{Example of a problem with holes in a model point cloud 
         due to occlusions of object parts:
-        (a) view of PR2 head model close to one a camera had while capturing,
-        (b) view that is lower a camera trajectory: there is a hole under 
+        (a) PR2 head model from the viewpoint close to one of a camera poses,
+        (b) viewpoint that is lower than the camera trajectory: there is a hole under 
         the top part of the head}
         \label{fig:pr2}
 \end{figure}
@@ -531,7 +537,7 @@ a sum of the RGB-D odometry terms:
 F_{RGBD}(x_{1:N}) = \\
 = \omega_{rgbd} \sum_{n,m,i} \biggl[I_n(\pi p_{ni}) - I_m\Bigl(\pi \bigl((p_{ni} \oplus x_n) \ominus x_m\bigr)\Bigr) \biggr]^2,
 \end{multline}
-where $I_n$ is an intensity image, $\pi$ is an image projection function, $\omega_{rgbd}$
+where $I_n$ is an intensity image of $n$-th frame, $\pi$ is an image projection function, $\omega_{rgbd}$
 is a weight of the RGB-D term.
 
 So the following function is minimized at the second step:
@@ -541,7 +547,7 @@ F_{SE3}(x_{1:N}) + F_{ICP}(x_{1:N}) + F_{RGBD}(x_{1:N}).
 
 In order to increase basin of convergence 
 we minimize \eqref{eq:fsecond} using a coarse-to-fine scheme 
-what visual odometry algorithms often do. 
+like often done for visual odometry algorithms. 
 We recompute correspondences between frames
 after each iteration of each pyramid level.
 
@@ -557,20 +563,22 @@ misalignment of scans due to it. The third step produces a final accurate model 
 simultaneous optimization of object points coordinates and camera poses.
 
 This step exploits the idea of \cite{ruhnke2012highly} but our version 
-is simplified due to previous steps: 
+is simplified due to the previous steps: 
 
 \begin{itemize}
  \item As we already have well-aligned scans at this stage, we can apply 
  the fast projective algorithm \cite{rusinkiewicz2001efficient} 
  (with filtering by differences in depth values, 
  normals and intensity) to find correspondences instead of slower
- normal-shooting which \cite{ruhnke2012highly} uses.
- \item We consider that each object 3D point of each frame is 
- a surfel centered in this point i.e. for each frame there are as many 
- surfels as object pixels it has. We don't aim for large space model refinement as \cite{ruhnke2012highly}
+ normal-shooting method which \cite{ruhnke2012highly} uses.
+ %TODO add a direct link to the normal-shooting?
+ \item We consider each object 3D point of each frame as 
+ a surfel centered in this point, i.e. the number of surfels corresponding to a frame
+ is equal to the number of object pixels in the frame. 
+ We don't aim for large space model refinement as \cite{ruhnke2012highly}
  so it is not necessary for us to use a more compact scan surface representation by covering several pixels 
  by one surfel.
- \item After the surfel 3D position was refined we update only depth value 
+ \item After the surfel 3D position is refined we update only depth value 
  in the original pixel of a frame depth map. This conforms with the purpose to 
  refine noisy depth measurements using information from other scans.
 \end{itemize}
@@ -585,15 +593,15 @@ F_{SE3}(x_{1:N}) + F_{ICP}(x_{1:N}) + F_{RGBD}(x_{1:N}) + \\
 + F_{model}(x_{1:N}, M).
 \end{multline}
 
-After \eqref{eq:fthird} was minimized we filter out the points 
-which don't have correspondences or have a small number of correspondences in
+After \eqref{eq:fthird} is minimized we filter out the points 
+that don't have correspondences or have a small number of correspondences (less than 3 ones) in
 all other frames because they were not refined or the refinement result
-is doubtful due to small number of used correspondences.
+is unreliable due to a small number of used correspondences.
 
 In order to solve the least squares optimization problems 
 of the three steps \eqref{eq:ffirst}, \eqref{eq:fsecond} and \eqref{eq:fthird} 
-they were formulated as the graph-based optimization tasks.
-These tasks were solved by applying the efficient g2o framework 
+we formulated them as graph-based optimization tasks.
+These tasks are solved by applying the g2o framework 
 \cite{kuemmerle2011g2o} which exploits sparseness of the graph structure.
 
 The output of the offline stage is the final model representing
@@ -686,7 +694,7 @@ the mesh due to absent measurements of an RGB-D camera in occluded parts of obje
 Allowing an arbitrary camera 
 trajectory will reduce unobserved object area and give more complete
 point clouds and meshes. Projecting texture on a mesh is a next step.
-All of this is possible directions for future work.
+All of this are possible directions for future work.
 
 
 \section{CONCLUSION}
@@ -695,11 +703,11 @@ This paper presented the tabletop object scanning pipeline
 which gives accurate 3D models from RGB-D sensor data.
 It is convenient enough for usage by a person and also makes a robot closer
 to autonomous acquisition of a 3D model. The pipeline 
-was successfully applied by a person and PR2 robot 
+was successfully used by a human and a PR2 robot 
 to scan a large dataset of objects and produced 
 accurate models.
 
-A code of the system is available as open-source at
+The code of the system is available as open-source at
 \href{http://bit.ly/reconst3d}{http://bit.ly/reconst3d}.
 
 \addtolength{\textheight}{-12cm}   % This command serves to balance the column lengths
@@ -708,17 +716,6 @@ A code of the system is available as open-source at
                                   % This command does not take effect until the next page
                                   % so it should come on the page before the last. Make
                                   % sure that you do not shorten the textheight too much.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section*{ACKNOWLEDGMENT}
-
-We thank Vincent Rabaud for initiating the work as 
-a Willow Garage project, active and useful discussions, help with 
-testing on a PR2 robot as well as for the fast implementations 
-of low-level steps of the algorithms like normal computing, plane finding, etc.
-We also thank Victor Eruhimov for the global supervision.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
