@@ -52,7 +52,7 @@ Tabletop Object Scanning with an RGB-D Sensor*
 \thanks{*This work was supported by Willow Garage, Inc.}% <-this % stops a space
 \thanks{$^{1}$M. Dimashova, I. Lysenkov and V. Eruhimov are with Itseez, Nizhny Novgorod, Russia
         {\tt\small \{maria.dimashova, ilya.lysenkov, victor.eruhimov\}@itseez.com}}%
-\thanks{$^{2}$V. Rabaud is with {\tt\small }}%
+\thanks{$^{2}$V. Rabaud is with Willow Garage, Menlo Park, California, USA {\tt\small vrabaud@willowgarage.com}}%
 %\TODO fill Vincent's info
 }
 
@@ -69,18 +69,14 @@ Tabletop Object Scanning with an RGB-D Sensor*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
 The paper presents a complete pipeline for tabletop object scanning
-which creates accurate 3D models from RGB-D sensor data and can be carried out both by a person
-and a robot. We consider the capturing scenario when a camera makes
-%TODO maybe "a capturing scenario" or "capturing scenario"?
-one turn around a table with an object. The online part of our approach consists 
+which creates accurate 3D models from RGB-D data and can be carried out both by a person
+and a robot. We consider the capturing scenario where a camera makes
+a single turn around an object located on a table. The online part of our approach consists 
 of initial camera motion estimation using RGB-D visual
 odometry and detection of loop closure in the trajectory. The offline part
-is graph-based global refinement of camera poses and model points.
-%simultaneously what was previously shown gives the higher accuracy of models. 
-We perform global graph optimization in a coarse-to-fine scheme to 
-increase its basin of convergence like often done in odometry algorithms. 
-In addition to usual ICP constraints we also enhanced global cost function 
-by constraints from RGB data to make the scanning pipeline more stable in case 
+is graph-based global coarse-to-fine refinement of camera poses and model points.
+In addition to the usual geometric ICP constraints, we add
+RGB ones to make the scanning pipeline more stable in our specific case 
 of planar and symmetric surfaces. 
 
 The presented object reconstruction pipeline was tested using both a hand-held RGB-D sensor and a PR2 robot.
@@ -94,38 +90,28 @@ The code of our system is available as open-source.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{INTRODUCTION AND RELATED WORK}
 
-Object scanning is a common problem which has several important applications in robotics.
 3D models of objects are commonly required for reliable grasping \cite{miller2004graspit, sahbani2012overview},
-%TODO: add refs
-manipulation and motion planning and also can be used in perception tasks like recognition, pose estimation and tracking \cite{klank2009real, hinterstoisser2012accv}.
-%TODO this is not absolutely true, need to reformulate
-%Such applications make high demands for the accuracy of reconstructed models.
-Such applications will benefit from a convenient procedure
-to produce accurate models of new objects.
-In this paper we aim for creating an easy-to-use object scanning pipeline
-which can be used both by people and robots to create 3D models of objects.
+%TODO: add refs: ask Ioan Sucan or Sachin from Willow about it
+manipulation and motion planning. It can also be used in perception tasks like recognition, pose estimation and tracking \cite{klank2009real, hinterstoisser2012accv}.
+A greater accuracy is always useful but an ease of use also enables a scalability
+in the number of objects that can be scanned.
+This paper describes an easy-to-use 3D object scanning pipeline
+which can be used both by people and robots.
 We consider rigid objects that can be encountered
-by a robot in a domestic environment and that can require robotic manipulation:
-for example, kitchenware, children's toys and small pieces of furniture to name a few.
+in a domestic environment and that can require robotic manipulation, for example:
+kitchenware, children's toys and small pieces of furniture to name a few.
 
-%TODO: ref?
-There exist two possible ways to scan the considered kind of objects: 
-%TODO: define in-hand?
-in-hand or tabletop scanning. In-hand scanning faces the problems
-of automatic object segmentation and possible misregistration of symmetric object scans. 
-Black gloves on hands and black curtain as background are used in capturing setup of \cite{weise2011online}
-to solve the problem of object segmentation. Such restriction on a background is not always applicable,
-moreover the problem with symmetric objects isn't solved in this work, 
-as well as in an earlier similar approach \cite{rusinkiewicz2002real}.
+To acquire several views of an object, a robot can either move it, or move around it. In-hand scanning faces the problems
+of automatic object segmentation and possible mis-registration of symmetric object scans. To help with the segmentation process
+\cite{weise2011online} uses black gloves in front of a black curtain but such setup is usually too restrictive.
+Moreover, just like in an earlier similar approach \cite{rusinkiewicz2002real}, the symmetry problem is not solved in this work.
 \cite{krainin2011manipulator} overcomes both problems successfully but
-they use knowledge about an object pose from a robot manipulator
-that holds it. Such information is not available in case of a person hand
-and even a vision-based hand tracking will not help with the problem of symmetric
-objects in all cases at least due to occlusions of a hand by scanned objects. 
-So in-hand scanning doesn't meet our goal of
-creating a general scanning pipeline which can be used both by people and robots.
-We use a table for scanning.
-%TODO we don't describe why we need a system suitable both a person and a robot.
+they use the pose knowledge from the robot manipulator holding the object.
+Such information is available neither in the human hand-held case 
+nor in the robot hand-held case of partly occluded symmetric objects.
+Those limitations drive the setup of this paper: a single object lying on a flat surface,
+with a camera on a robot or hand-held.
+
 
 
 
@@ -166,70 +152,65 @@ We use a table for scanning.
                 \includegraphics[width=0.49\linewidth]{../tizer/tilexTop.png}
                 \caption{A model of "Tilex" bottle captured by PR2}
         \end{subfigure}
-        \caption{Examples of the algorithm working: (a)-(c) are the supported 
-        capturing setups, (d) results of working}
+        \caption{Algorithm details: (a)-(c) are the supported 
+        capture setups, and (d) shows some results}
         \label{fig:tizer}
 \end{figure}
 
 
-Probably the most common tabletop object scanning setup in computer 
-%TODO: ref, proof
-vision or robotics laboratories is a table or a turntable with
-visual markers on it (e.g. chessboards) that
-are used for the camera pose estimation and can be applied for 
-an object segmentation too. \cite{ectoObjectRecognitionCapture} also 
-provides an option to replace special visual markers by arbitrary texture. 
-But in this case there is a training stage for textured visual features:
+A common object scanning setup is a table or a turntable with
+visual markers on it (e.g. chessboards or dot pattern) that
+are used for camera pose estimation and sometimes segmentation.
+\cite{ectoObjectRecognitionCapture} also 
+provides an option to replace special visual markers by arbitrary texture
+after a training stage:
 the user has to capture a canonical image of the empty table from
 a planar frontal view before scanning. Preparing the markers
 and the training stage for texture is inconvenient for a human and
 hard or impossible for a robot. 
 
-Our approach also requires 
-texture on a table at our scanning setup. For the camera motion estimation 
-we use state-of-the-art dense RGB-D odometry algorithm \cite{steinbrucker2011real} 
-instead of feature-based tracking 
-and it allows us to eliminate the training stage.
-We can not abandon the requirement of texture because the depth-based
-techniques for the camera motion estimation like ICP \cite{besl1992method} 
-are not reliable in scenes with the dominant plane \cite{rusinkiewicz2001efficient} 
-that we want to handle.
+Our setup also requires 
+texture on a plane but does not track feature, hence does not require a training stage.
+The table texture is used for the camera motion estimation 
+with the state-of-the-art dense RGB-D odometry algorithm from \cite{steinbrucker2011real} 
+We cannot ignore texture because depth-based
+techniques for camera motion estimation like ICP \cite{besl1992method} 
+are not reliable in our setup with a dominant plane \cite{rusinkiewicz2001efficient}.
 
 
-For the same reason
-the impressive technique KinectFusion \cite{newcombe2011kinectfusion} 
-which uses ICP for camera poses estimation can not be applied in our capturing setup.
-Usage of KinectFusion without a table plane or intentionally cluttered table 
-puts us back to the problem of automatic object segmentation.
-Also KinectFusion smooths captured surfaces too much, \cite{meister2012when} measured that
-the system can resolve object details with a minimum size of approximately 10mm.
-% TODO "measured that the system can resolve object details with a minimum size of approximately 10mm" is a copy-paste 
-% from the cited paper
+For the same reason, we cannot use
+the impressive KinectFusion technique \cite{newcombe2011kinectfusion},
+which uses ICP for camera poses estimation.
+We could intentionally clutter the table but that would bring us back to
+an object segmentation problem with possible object occlusions.
+Finally, KinectFusion also smoothes captured surfaces too much: \cite{meister2012when} measured that
+the system ``can resolve object details with a minimum size of approximately 10mm''.
 
-The other recent approach \cite{stuckler2012model} for 3D model learning 
-exploits both RGB and depth information of an input frame to estimate a camera pose 
+An other recent approach \cite{stuckler2012model} for 3D model learning 
+exploits both RGB and depth information to estimate a camera pose 
 in relation to an aggregated scene model represented by the multi-resolution surfels map.
 Using RGB data can allow this method to get stable pose estimation
-for scenes with a dominant plane. Also camera pose estimation in "frame-to-model" mode
-in this work as well as in KinectFusion leads to less accumulation of the pose estimation error. 
-But it is still possible that there are small camera pose errors which result in
+for scenes with a dominant plane. Also this "frame-to-model" camera pose estimation (similar to the one in 
+KinectFusion) leads to less accumulation of the pose estimation error
+but small camera pose errors can still exist, which result in
 small misalignment of RGB-D scans. Our approach applies global alignment of scans
 to increase their consistency to the input RGB and depth data.
 
-Model reconstruction can be referred to the problem of simultaneous localization
-and mapping (SLAM). There are a lot of SLAM approaches including those ones working
-with RGB-D cameras, e.g. \cite{stuckler2012integrating},
-\cite{endres2012evaluation}, \cite{henry2012rgb}, \cite{strasdat2011double}. But in contrast to our goal,
-a scanning relatively small objects, such approaches are more oriented for
-a more long-lasting navigation and large space mapping. Many of them aim at
-real-time working on a robot, so they can afford alignment of scans 
+Model reconstruction can also be referred to the problem of simultaneous localization
+and mapping (SLAM). The SLAM literature is vast, even for approaches using RGB-D
+cameras, e.g. \cite{stuckler2012integrating},
+\cite{endres2012evaluation}, \cite{henry2012rgb}, \cite{strasdat2011double}. Such approaches are more geared
+towards long-lasting navigation and large space mapping while we only focus on relatively small objects.
+Also, many of them aim at
+real-time runtime on a robot, and they can therefore only solve alignment of scans 
 as rigid-bodies only. 
+
 The recent work \cite{ruhnke2012highly} introduced a post-processing procedure for the output of SLAM systems
 which considers the registered scans as non-rigid bodies and produces highly accurate
 surface of a model by simultaneous refinement of model points positions and camera poses.
-Pairwise and global alignment of camera poses and depth maps which includes non-rigid 
+Pairwise and global alignment of camera poses and depth maps which include non-rigid 
 deformations is also applied in \cite{cui2012algorithms}. Their results include tests on the Kinect
-sensor data but their work is mainly oriented for Time-of-Flight (ToF) cameras. Considering non-rigid deformations 
+sensor data but their work is mainly focused on Time-of-Flight (ToF) cameras. Considering non-rigid deformations 
 of depth maps allowed them to get high quality 3D models even for very noisy ToF depth measurements.
 So we also follow the idea of simultaneous optimization of camera poses and model points 
 for the final non-rigid refinement. We exploit the knowledge 
@@ -237,11 +218,10 @@ about the supported scanning setup and both RGB and depth
 data to produce initial alignment of scans as rigid bodies
 and then refine it by such optimization non-rigidly.
 
-In this paper we provide a complete pipeline for object scanning
-in the tabletop capturing setup. This setup has natural requirements
-about a table and texture for the stable camera pose estimation,
-coping with symmetric objects and automatic object segmentation, and it is general enough
-to use it by a person or a robot. A base of 42 objects was
+In this paper provides a complete pipeline for object scanning in
+a simple tabletop setup: a plane, to deal with for object segmentation, with texture,
+to deal with camera pose estimation and potential object symmetries. It is also general enough
+to be used by a person or a robot. A base of 42 objects was
 scanned successfully by a PR2 robot, a person with a hand-held camera 
 and using a turntable (see examples of scanning setups 
 in Fig.~\ref{fig:tizer}).
