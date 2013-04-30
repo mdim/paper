@@ -68,7 +68,7 @@ at Willow Garage, Menlo Park, California, USA {\tt\small vrabaud@aldebaran-robot
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-The paper presents a complete pipeline for tabletop object scanning
+This paper presents a complete pipeline for tabletop object scanning
 which creates accurate 3D models from RGB-D data and can be carried out both by a person
 and a robot. We consider the capturing scenario where a camera makes
 a single turn around an object located on a table. The online part of our approach consists 
@@ -95,22 +95,24 @@ Object scanning is a common problem which has several important applications in 
 %it is a more smooth introduction
 3D models of objects are commonly required for reliable grasping \cite{miller2004graspit, sahbani2012overview},
 %TODO: add refs: ask Ioan Sucan or Sachin from Willow about it
-manipulation and motion planning. It can also be used in perception tasks like recognition, pose estimation and tracking \cite{klank2009real, hinterstoisser2012accv}.
+manipulation and motion planning. They can also be used in perception tasks like recognition, pose estimation and 
+tracking \cite{klank2009real, hinterstoisser2012accv}.
 A greater accuracy is always useful but an ease of use also enables a scalability
 in the number of objects that can be scanned.
 This paper describes an easy-to-use 3D object scanning pipeline
-which can be used both by people and robots.
+which can be used both by people and robots (see 
+examples of scanning setups in Fig.~\ref{fig:tizer}).
 We consider rigid objects that can be encountered
-in a domestic environment and that can require robotic manipulation, for example:
-kitchenware, children's toys and small pieces of furniture to name a few.
+in a domestic environment and that can require robotic manipulation, for example
+kitchenware, toys and small pieces of furniture.
 
 To acquire several views of an object, a robot (or a person) can either move it, or move around it. In-hand scanning faces the problems
 of automatic object segmentation and possible mis-registration of symmetric object scans. To help with the segmentation 
 process,
-\cite{weise2011online} uses black gloves in front of a black curtain: such setup is usually too restrictive.
-Moreover, just like in an earlier similar approach \cite{rusinkiewicz2002real}, the symmetry problem is not solved in this work.
+\cite{weise2011online} uses black gloves in front of a black curtain but such setup is usually too restrictive.
+Moreover, just like in an earlier similar approach \cite{rusinkiewicz2002real}, it does not solve the symmetry problem. 
 \cite{krainin2011manipulator} overcomes both problems successfully but
-they use the pose knowledge from the robot manipulator holding the object.
+it uses the pose knowledge from the robot manipulator holding the object.
 Such information is not available in the human hand-held case 
 especially in case of partly occluded symmetric objects.
 % it's available for robots
@@ -157,7 +159,7 @@ with a camera on a robot or hand-held.
 %        \begin{subfigure}[b]{0.49\linewidth}
 %                \centering
                 \includegraphics[width=0.49\linewidth]{../tizer/tilexTop.png}
-                \caption{A model of "Tilex" bottle captured by PR2}
+                \caption{Model of a "Tilex" bottle captured by a PR2}
         \end{subfigure}
         \caption{Algorithm details: (a)-(c) are the supported 
         capture setups, and (d) shows some results}
@@ -169,8 +171,8 @@ A common object scanning setup is a table or a turntable with
 visual markers on it (e.g. chessboards or dot pattern) that
 are used for camera pose estimation and sometimes segmentation.
 \cite{ectoObjectRecognitionCapture} also 
-provides an option to replace special visual markers by arbitrary texture.
-But there is a training stage in this case:
+provides an option to replace special visual markers by arbitrary texture but
+there is a training stage in this case:
 % replace visual markers after the training? -- it's ambiguous
 the user has to capture a canonical image of the empty table from
 a planar frontal view before scanning. Preparing the markers
@@ -180,7 +182,7 @@ hard or impossible for a robot.
 Our setup also requires 
 texture on a plane but does not track features, hence does not require a training stage.
 The table texture is used for the camera motion estimation 
-with state-of-the-art dense RGB-D odometry algorithm from \cite{steinbrucker2011real}.
+with state-of-the-art dense RGB-D odometry from \cite{steinbrucker2011real}.
 We cannot ignore texture because depth-based
 techniques for camera motion estimation like ICP \cite{besl1992method} 
 are not reliable in our setup with a dominant plane \cite{rusinkiewicz2001efficient}.
@@ -201,7 +203,7 @@ Using RGB data can allow this method to get stable pose estimation
 for scenes with a dominant plane. Also this "frame-to-model" camera pose estimation (similar to the one in 
 KinectFusion) leads to less accumulation of the pose estimation error
 but small camera pose errors can still exist, which result in
-small misalignment of RGB-D scans. Our approach applies global alignment of scans
+small misalignments of RGB-D scans. Our approach applies global alignment of scans
 to increase their consistency to the input RGB and depth data.
 
 Model reconstruction can also be referred to the problem of simultaneous localization
@@ -213,7 +215,7 @@ Also, many of them aim at
 real-time runtime on a robot, and they can therefore only afford alignment of scans 
 as rigid-bodies only. 
 
-The recent work \cite{ruhnke2012highly} introduced a post-processing procedure for the output of SLAM systems
+The recent work in \cite{ruhnke2012highly} introduced a post-processing procedure for the output of SLAM systems
 which considers the registered scans as non-rigid bodies and produces highly accurate
 surface of a model by simultaneous refinement of model points positions and camera poses.
 Pairwise and global alignment of camera poses and depth maps which include non-rigid 
@@ -224,17 +226,15 @@ So we also follow the idea of simultaneous optimization of camera poses and mode
 for the final non-rigid refinement. We exploit the knowledge 
 about the supported scanning setup and both RGB and depth 
 data to produce initial alignment of scans as rigid bodies
-and then refine it by such optimization non-rigidly.
+and then refine them by such non-rigid optimization.
 
-In this paper we provide a complete pipeline for object scanning
+In this paper, we provide a complete pipeline for object scanning
 in the tabletop capturing setup. This setup has natural requirements
-about a table and texture for the stable camera pose estimation,
+with a table and texture for the stable camera pose estimation,
 coping with symmetric objects and automatic object segmentation, and it is general enough
-to use it by a person or a robot. A base of 42 objects
+to be used by a person or a robot. A base of 42 objects
 got successfully scanned from a PR2 robot and a person using a hand-held camera or a Lazy Susan (see 
 examples of scanning setups in Fig.~\ref{fig:tizer}).
-% We would like to stress some important issues of the work instead of just overview 
-(we guess it is more usefull for the readers).
 
 \section{OVERVIEW OF THE SCANNING PIPELINE}
 
@@ -249,18 +249,17 @@ First, we choose a textured table because it solves the following issues:
 
 \item \textit{Automatic object segmentation}. It is easy to find a table plane and segment an object on top of 
 it using RGB-D data.
-\item \textit{Stable camera pose estimation}. Dense visual odometry methods only based on depth measurements,
+\item \textit{Stable camera pose estimation}. Dense visual odometry methods that are only based on depth measurements,
 like ICP, are not reliable in a scene with a prevalent plane \cite{rusinkiewicz2002real}
-because planes lack a rich 3D structure (it is like trying to match textureless objects by looking for textured 2D 
+because planes lack a rich 3D structure (they are the 2d equivalent of matching a textureless objects by 
+looking for textured 2D 
 features). That is why we focus on RGB-D visual odometry instead. Nonetheless, both dense approaches
 assume a static scene and can only tolerate slight amounts of noise in movement or environment motion. Therefore,
 to obtain a stable camera motion estimation, we run dense odometry with a mask leaving out points that are not on 
 the table or object. That also helps us deal with dynamic scenes where there are moving objects e.g. people, pets or 
 robots.
 \item \textit{Scanning symmetric textureless objects}. Registration of scans for such objects
-is most likely to fail if it only uses object points. In order to resolve ambiguities, pose should be known 
-% Why feature points? In this case we lose an accent object points ONLY (without a table). 
-
+is most likely to fail if it only uses object points. In order to solve for ambiguities, pose should be known 
 beforehand, like in \cite{krainin2011manipulator},
 or constraints should be created using some part of a scene with
 2D/3D texture. We exploit the plane texture to this end.
@@ -274,15 +273,16 @@ or constraints should be created using some part of a scene with
 Next, we decide to only make one turn around the table to simplify loop closure detection and pose graph construction as
 setting incorrect associations
 in the graph can lead to catastrophic implications in the offline graph
-optimization \cite{sunderhauf2012switchable}
-However, a complex object may require a more complicated trajectory
-or merging several scanning session together to capture all parts of the object, %TODO: ref
+optimization \cite{sunderhauf2012switchable}.
+However, a complex object like in Figure \ref{fig:pr2}) may require a more complicated trajectory
+or merging several scanning session together, %TODO: ref
 but this is a direction for future work.
 
-Our pipeline then consists of an online and an offline stage. The online part is the capture of RGB-D data,
+Now that the setup is well defined, we can focus on our pipeline. It consists of an online and an 
+offline stage. The online part is the capture of RGB-D data,
 initial estimation of camera poses using frame-to-frame odometry,
 selection of keyframes and detection of loop closure. The offline part performs
-global refinement of camera poses and model points.
+global refinement of camera poses and model points given the initial estimate of the online phase.
 
 \section{ONLINE STAGE}
 
@@ -311,7 +311,7 @@ The RGB-D odometry method assumes absence of motion in a scene which makes them 
 % There can exist RGB-D odometry methods that deal with motion.
 robust to large movements. To cope with this problem and keep stability, we only run odometry
 on the points of the table and the object. The mask of table points
-is found in real-time using an approach from \cite{poppinga2008fast}. An object mask is
+is found in real-time using an approach inspired by \cite{poppinga2008fast}. An object mask is
 obtained by extracting points in a virtual 3D prism above the table \cite{rusu2009detecting}.
 Using only the points
 of a table and an object in the camera pose estimation brings one more advantage:
@@ -344,7 +344,7 @@ Still, it should be compensated and we use loop closure to this end.
 When the length of the trajectory is large enough, we begin to estimate the
 odometry transformation between each current frame and the starting one. 
 If the returned transformation passes through the described filters, 
-this means the current pose is close to the first one and 
+it means the current pose is close to the first one and 
 the trajectory has been closed. When the loop closure is detected 
 the capture is stopped.
 
@@ -362,14 +362,14 @@ To summarize, each frame is passed through the steps:
 
 We also should note that loop closure detection using the RGB-D odometry requires
 the last pose of a camera to be in a basin of
-the algorithm convergence (about 15cm and 15 degrees) from the first pose. 
+the algorithm convergence (also about 15cm and 15 degrees) from the first pose. 
 To allow a larger difference between the first and the last frames
 another approach could be used in detection of loop closure. We tried to use visual descriptors, like
 SIFT \cite{lowe2004distinctive}, SURF \cite{bay2006surf}, ORB \cite{rublee2011orb}, but they failed to match even
 relatively close frames due to large affine distortions.
 ASIFT \cite{morel2009asift} was able to overcome this problem
 and perfectly coped with the task in our experiments;
-it however has to be strongly optimized before its usage in an online application.
+it however has to be strongly optimized before it can be used in an online application.
 
 The output of the online part is a set of consecutive keyframes with 
 estimated poses and the transformation between the first and the last 
@@ -388,6 +388,8 @@ by introducing additional terms which can be reliably computed
 thanks to refinement from the previous stage.
 
 %TODO is it clear that constrains are the same but they are with new data (new corresps, etc.)?
+
+\subsection{First Step}
 
 The input of the offline stage is a set of initial camera poses $\{x_n^{(0)},~n=1,\dots, N\}$ 
 estimated by accumulating consecutive frame-to-frame odometry transformations 
@@ -444,17 +446,19 @@ $y_n=x_{n+1} \ominus x_{n}$ ($n=1,\dots, N-1$), $y_N=x_N \ominus x_1$,
 the matrix $\Omega_{SE3}$ is an information matrix that weighs an odometry uncertainty \cite{kuemmerle2011g2o}.
 %TODO say that it's diagonal matrix here?
 
+\subsection{Second Step}
+
 The first step does not use RGB-D information directly which results in
 slightly misaligned frames. Therefore, to achieve better consistency among all RGB-D scans, we add an RGB-D term to 
 refine the camera poses in a second step.
-As the first step improved pose accuracy by exploiting loop closure event, 
+As the first step improved pose accuracy by exploiting loop closure, 
 corresponding points between two frames can now be found using
 the fast projective data association algorithm \cite{rusinkiewicz2001efficient}.
 For each pair of corresponding 3D points from each pair of frames, two minimization terms are added: one 
 for their 3D distance and one for their image intensity difference.
 
 The cost function responsible for the shape 
-consistency is a sum of the ICP odometry terms:
+consistency is the sum of the ICP odometry terms:
 \begin{equation} \label{eq:ficp}
     F_{ICP}(x_{1:N}) = \sum_{n,m,i,j} \Delta p_{nmij}^T \Omega_{mj} \Delta p_{nmij},
 \end{equation}
@@ -515,10 +519,12 @@ the textured table points give necessary constraints in the case of symmetric an
 The second time, \eqref{eq:fsecond} is minimized using only object points to refine 
 camera poses relatively to the interesting parts of the scans only.
 
-The second optimization step gave accurate camera poses and properly aligned scans
-as rigid bodies but the depth measurement noise gave some misalignment. The third step produces a 
+\subsection{Third Step}
+
+The second optimization step gives accurate camera poses and properly aligned scans
+as rigid bodies but the depth measurement noise leads to some misalignment. The third step we propose produces a 
 final accurate model by
-simultaneous optimization of object points coordinates and camera poses.
+simultaneously optimizing object points coordinates and camera poses.
 
 This step exploits the idea of \cite{ruhnke2012highly} but our version 
 is simplified due to the previous steps: 
@@ -532,9 +538,7 @@ is simplified due to the previous steps:
  normal-shooting method that \cite{ruhnke2012highly} uses.
  %TODO add a direct link to the normal-shooting?
  \item We consider each object 3D point of each frame as 
- a surfel centered in this point, i.e. the number of surfels corresponding to a frame
- is equal to the number of object pixels in the frame. 
- We don't aim for large space model refinement as in \cite{ruhnke2012highly}:
+ a surfel but we don't aim at large space model refinement as in \cite{ruhnke2012highly}:
  it is therefore not necessary for us to use a more compact scan surface representation by covering several pixels 
  by one surfel.
  \item After the surfel 3D position is refined, we only update the depth value 
@@ -645,7 +649,7 @@ The offline refinement of camera poses
 and model points takes about 5-10 minutes for one model on an Intel Core i5 using up to 12 Gb of RAM
 depending on object size.
 
-We also experimented in building meshes from those point clouds using 
+We also experimented building meshes from those point clouds using 
 the ball pivoting algorithm \cite{bernardini1999ball}
 implemented in MeshLab \cite{meshlab}. The accuracy of 
 the point cloud allows building high quality meshes but the results do have some problems. One of the important issues 
@@ -659,18 +663,18 @@ point clouds and meshes. Another potential direction for future work is texture 
 
 \section{CONCLUSION}
 
-This paper presented the tabletop object scanning pipeline
-which gives accurate 3D models from RGB-D sensor data.
+This paper presents a tabletop object scanning pipeline which, in addition to producing accurate 3D models from RGB-D 
+data, also offers an easy-to-use set up. The plane and single loop closure are the only requirements and the online 
+processing computation helps cleaning the data and providing feedback during the capture.
 It is convenient enough for usage by a person and also makes a robot closer
-to autonomous acquisition of a 3D model. The pipeline 
-was successfully used by a human and a PR2 robot 
-to scan a large dataset of objects and produced what we consider
-accurate models.
+to autonomous acquisition of a 3D model as was shown during the capture of our dataset.
+
+Future work includes meshing of the object as well as multiple loop handling for complex objects.
 
 The code of the system is available as open-source at
 \href{http://bit.ly/reconst3d}{http://bit.ly/reconst3d}.
 
-\addtolength{\textheight}{-11cm}   % This command serves to balance the column lengths
+\addtolength{\textheight}{-8cm}   % This command serves to balance the column lengths
                                   % on the last page of the document manually. It shortens
                                   % the textheight of the last page by a suitable amount.
                                   % This command does not take effect until the next page
