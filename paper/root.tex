@@ -364,8 +364,8 @@ keyframes from loop closure.
 
 \label{sec:offline}
 
-The purpose of the offline processing is refinement of the online-estimated 
-camera poses as well as points of scans to get a model maximally 
+The purpose of the offline processing is to refine the online-estimated 
+camera poses and object points to get a model maximally 
 consistent with the captured RGB-D data. We achieve this in three steps by 
 solving least squares optimization problems. The cost function is extended at each step 
 by introducing additional terms which can be reliably computed
@@ -415,8 +415,8 @@ i.e. odometry transformation from the last frame to the first one.
         \label{fig:gorgon}
 \end{figure}
 
-At the first step we compensate the drift in frame-to-frame estimated camera poses and 
-make them consistent to the odometry constrains (including the transformation from the last pose
+First, we compensate the drift in frame-to-frame estimated camera poses and 
+make them consistent to the odometry constraints (including the transformation from the last pose
 to the first one) by minimizing the following cost function
 with regard to camera poses $x_{1:N}$:
 \begin{equation} \label{eq:ffirst}
@@ -613,33 +613,30 @@ captured (see an example in Fig.~\ref{fig:gorgon}).
 
 \label{sec:experiments}
 
-The presented system was tested in three capturing scenarios:
+The presented system was tested on three capturing scenarios:
 
 \begin{itemize}
- \item A person with a hand-held camera captured an object placed on a fixed table.
- \item A PR2 robot with its RGB-D sensor detoured around a fixed table with an object.
- \item A table was rotated in front of a camera fixed on a tripod.
+ \item A person with a hand-held camera and an object placed on a fixed table.
+ \item A PR2 robot with its RGB-D sensor looking at an object on a table and rotating around it.
+ \item A fixed camera and an object on a Lazy Susan.
 \end{itemize}
 
-As a result the algorithm successfully produced accurate models 
-on a dataset of 42 household objects
-(see several examples in Fig.~\ref{fig:results}).
+We show several of the 42 models household objects that were capture in Fig.~\ref{fig:results}.
 
 The offline refinement of camera poses 
-and model points takes about 5-10 minutes for one model on Intel Core i5 with RAM of 12Gb 
+and model points takes about 5-10 minutes for one model on an Intel Core i5 using up to 12 Gb of RAM
 depending on object size.
 
-We also experimented to built a mesh for a model point cloud using 
+We also experimented in building meshes from those point clouds using 
 the ball pivoting algorithm \cite{bernardini1999ball}
 implemented in MeshLab \cite{meshlab}. The accuracy of 
-the point cloud allows building high quality meshes but still there
-are some problems. One of the important issues is holes in 
-the mesh due to absent measurements of an RGB-D camera in occluded parts of object surface 
+the point cloud allows building high quality meshes but the results do have some problems. One of the important issues 
+is holes in 
+the mesh due to absent measurements of an RGB-D camera in occluded parts of the object surface 
 (see the Fig.~\ref{fig:pr2} for an illustration of the problem).
 Allowing an arbitrary camera 
-trajectory will reduce unobserved object area and give more complete
-point clouds and meshes. Projecting texture on a mesh is a next step.
-All of this are possible directions for future work.
+trajectory would reduce unobserved object area and give more complete
+point clouds and meshes. Another potential direction for future work is texture projection on the mesh.
 
 
 \section{CONCLUSION}
@@ -649,7 +646,7 @@ which gives accurate 3D models from RGB-D sensor data.
 It is convenient enough for usage by a person and also makes a robot closer
 to autonomous acquisition of a 3D model. The pipeline 
 was successfully used by a human and a PR2 robot 
-to scan a large dataset of objects and produced 
+to scan a large dataset of objects and produced what we consider
 accurate models.
 
 The code of the system is available as open-source at
