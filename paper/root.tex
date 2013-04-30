@@ -91,6 +91,8 @@ The code of our system is available as open-source.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{INTRODUCTION AND RELATED WORK}
 
+Object scanning is a common problem which has several important applications in robotics.
+%it is a more smooth introduction
 3D models of objects are commonly required for reliable grasping \cite{miller2004graspit, sahbani2012overview},
 %TODO: add refs: ask Ioan Sucan or Sachin from Willow about it
 manipulation and motion planning. It can also be used in perception tasks like recognition, pose estimation and tracking \cite{klank2009real, hinterstoisser2012accv}.
@@ -112,7 +114,9 @@ they use the pose knowledge from the robot manipulator holding the object.
 Such information is not available in the human hand-held case 
 especially in case of partly occluded symmetric objects.
 % it's available for robots
-Those limitations drive the setup of this paper: a single object lying on a flat surface,
+Therefore, in-hand scanning doesn't meet our goal of
+creating a scanning pipeline which can be used both by people and robots.
+This drives the setup of the paper: a single object lying on a flat surface,
 with a camera on a robot or hand-held.
 
 
@@ -206,7 +210,7 @@ cameras, e.g. \cite{stuckler2012integrating},
 \cite{endres2012evaluation}, \cite{henry2012rgb}, \cite{strasdat2011double}. Such approaches are more geared
 towards long-lasting navigation and large space mapping while we only focus on relatively small objects.
 Also, many of them aim at
-real-time runtime on a robot, and they can therefore only solve alignment of scans 
+real-time runtime on a robot, and they can therefore only afford alignment of scans 
 as rigid-bodies only. 
 
 The recent work \cite{ruhnke2012highly} introduced a post-processing procedure for the output of SLAM systems
@@ -222,17 +226,22 @@ about the supported scanning setup and both RGB and depth
 data to produce initial alignment of scans as rigid bodies
 and then refine it by such optimization non-rigidly.
 
-We present an overview of the pipeline in Section \ref{sec:overview} and then detail the online and offline stages in 
-Sections \ref{sec:online} and \ref{sec:offline}. Finally, we present results in Section \ref{sec:experiments} of
-objects that got successfully scanned from a PR2 robot and a person using a hand-held camera or a Lazy Susan (see 
+In this paper we provide a complete pipeline for object scanning
+in the tabletop capturing setup. This setup has natural requirements
+about a table and texture for the stable camera pose estimation,
+coping with symmetric objects and automatic object segmentation, and it is general enough
+to use it by a person or a robot. A base of 42 objects
+got successfully scanned from a PR2 robot and a person using a hand-held camera or a Lazy Susan (see 
 examples of scanning setups in Fig.~\ref{fig:tizer}).
-
+% We would like to stress some important issues of the work instead of just overview 
+(we guess it is more usefull for the readers).
 
 \section{OVERVIEW OF THE SCANNING PIPELINE}
 
 \label{sec:overview}
 
-We introduced our setup earlier but we now explain it in detail.
+We start the overview with a more detailed explanation
+of our scanning setup mentioned earlier.
 
 First, we choose a textured table because it solves the following issues:
 
@@ -267,7 +276,7 @@ setting incorrect associations
 in the graph can lead to catastrophic implications in the offline graph
 optimization \cite{sunderhauf2012switchable}
 However, a complex object may require a more complicated trajectory
-or merging several scanning session together, %TODO: ref
+or merging several scanning session together to capture all parts of the object, %TODO: ref
 but this is a direction for future work.
 
 Our pipeline then consists of an online and an offline stage. The online part is the capture of RGB-D data,
@@ -293,11 +302,13 @@ of Intel Core i5 without using SSE.
 It is achieved by only using patches with high gradient in the target intensity image
 to compute odometry (the same idea was proposed in \cite{tykkala2011direct} for another odometry algorithm).
 Other areas provide less information for alignment
+%TODO (for Vincent): "performed benchmarks using the .. benchmark" -- is it OK?
 and can be ignored without loss of accuracy; we performed benchmarks 
 using the TUM RGB-D benchmark \cite{sturm12iros} that corroborated that choice.
 % TODO prove it? it's easy to provide results on TUM, but this in not our main goal.  
 
-RGB-D odometry methods assume absence of motion in a scene which makes them not
+The RGB-D odometry method assumes absence of motion in a scene which makes them not
+% There can exist RGB-D odometry methods that deal with motion.
 robust to large movements. To cope with this problem and keep stability, we only run odometry
 on the points of the table and the object. The mask of table points
 is found in real-time using an approach from \cite{poppinga2008fast}. An object mask is
@@ -305,8 +316,8 @@ obtained by extracting points in a virtual 3D prism above the table \cite{rusu20
 Using only the points
 of a table and an object in the camera pose estimation brings one more advantage:
 moving a camera around a fixed table becomes equivalent to rotating
-a table in front of a fixed camera. Our system consequently covers the scanning setup of a hand-held sensor with a 
-turntable as we will see in the experiments.
+a table in front of a fixed camera. Our system consequently covers the scanning setups both of a hand-held sensor 
+and a turntable as we will see in the experiments.
 
 It is still possible to get an incorrect pose from RGB-D odometry
 because of light changes or motion blur from hand jitter. We filter out such outliers in the following ways:
@@ -622,11 +633,13 @@ The presented system was tested on three capturing scenarios:
 
 \begin{itemize}
  \item A person with a hand-held camera and an object placed on a fixed table.
- \item A PR2 robot with its RGB-D sensor looking at an object on a table and rotating around it.
+ \item A PR2 robot with its RGB-D sensor looking at an object on a fixed table and rotating around it.
  \item A fixed camera and an object on a Lazy Susan.
 \end{itemize}
 
-We show several of the 42 models household objects that were capture in Fig.~\ref{fig:results}.
+% This formulation stresses that all objects were scanned successfully
+The algorithm successfully produced accurate models 
+on a dataset of 42 household objects. We show several examples in Fig.~\ref{fig:results}.
 
 The offline refinement of camera poses 
 and model points takes about 5-10 minutes for one model on an Intel Core i5 using up to 12 Gb of RAM
