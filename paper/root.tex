@@ -251,7 +251,7 @@ First, we choose a textured table because it solves the following issues:
 it using RGB-D data.
 \item \textit{Stable camera pose estimation}. Dense visual odometry methods that are only based on depth measurements,
 like ICP, are not reliable in a scene with a prevalent plane \cite{rusinkiewicz2002real}
-because planes lack a rich 3D structure (they are the 2d equivalent of matching a textureless objects by 
+because planes lack a rich 3D structure (the 2d analogy is matching textureless objects by 
 looking for textured 2D 
 features). That is why we focus on RGB-D visual odometry instead. Nonetheless, both dense approaches
 assume a static scene and can only tolerate slight amounts of noise in movement or environment motion. Therefore,
@@ -522,7 +522,7 @@ camera poses relatively to the interesting parts of the scans only.
 \subsection{Third Step}
 
 The second optimization step gives accurate camera poses and properly aligned scans
-as rigid bodies but the depth measurement noise leads to some misalignment. The third step we propose produces a 
+as rigid bodies but the depth measurement noise leads to some misalignment. The third step produces a 
 final accurate model by
 simultaneously optimizing object points coordinates and camera poses.
 
@@ -538,8 +538,8 @@ is simplified due to the previous steps:
  normal-shooting method that \cite{ruhnke2012highly} uses.
  %TODO add a direct link to the normal-shooting?
  \item We consider each object 3D point of each frame as 
- a surfel but we don't aim at large space model refinement as in \cite{ruhnke2012highly}:
- it is therefore not necessary for us to use a more compact scan surface representation by covering several pixels 
+ a surfel because we don't aim at large space model refinement as in \cite{ruhnke2012highly}:
+ it is not necessary for us to use a more compact scan surface representation by covering several pixels 
  by one surfel.
  \item After the surfel 3D position is refined, we only update the depth value 
  of a pixel in the original pixel depth map. This conforms with the purpose of
@@ -674,7 +674,7 @@ Future work includes meshing of the object as well as multiple loop handling for
 The code of the system is available as open-source at
 \href{http://bit.ly/reconst3d}{http://bit.ly/reconst3d}.
 
-\addtolength{\textheight}{-8cm}   % This command serves to balance the column lengths
+\addtolength{\textheight}{-7cm}   % This command serves to balance the column lengths
                                   % on the last page of the document manually. It shortens
                                   % the textheight of the last page by a suitable amount.
                                   % This command does not take effect until the next page
