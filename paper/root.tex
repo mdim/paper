@@ -246,7 +246,7 @@ because planes lack a rich 3D structure (it is like trying to match textureless 
 features). That is why we focus on RGB-D visual odometry instead. Nonetheless, both dense approaches
 assume a static scene and can only tolerate slight amounts of noise in movement or environment motion. Therefore,
 to obtain a stable camera motion estimation, we run dense odometry with a mask leaving out points that are not on 
-the the table or object. That also helps us deal with dynamic scenes where there are moving objects e.g. people, pets or 
+the table or object. That also helps us deal with dynamic scenes where there are moving objects e.g. people, pets or 
 robots.
 \item \textit{Scanning symmetric textureless objects}. Registration of scans for such objects
 is most likely to fail if it only uses object points. In order to resolve ambiguities, pose should be known 
@@ -384,7 +384,7 @@ $\{z_n,~n=1,\dots, N-1\}$
 (where $z_n$ is the odometry transformation from the frame $n+1$ to the frame $n$)
 %from each 
 %current frame to the previous one
-and loop closure constraint $z_{N}$, 
+and the loop closure constraint $z_{N}$, 
 i.e. odometry transformation from the last frame to the first one.
 
 \begin{figure}[t]
@@ -433,28 +433,28 @@ $y_n=x_{n+1} \ominus x_{n}$ ($n=1,\dots, N-1$), $y_N=x_N \ominus x_1$,
 the matrix $\Omega_{SE3}$ is an information matrix that weighs an odometry uncertainty \cite{kuemmerle2011g2o}.
 %TODO say that it's diagonal matrix here?
 
-The first step does not use RGB-D information of the frames directly and they are
-still slightly misaligned. So an RGB-D term is added to refine the camera poses at the second step 
-to achieve better consistency among all RGB-D scans.
-The first step improved accuracy of poses by exploiting the loop closure event.
-So corresponding points between two frames can be found now by using
+The first step does not use RGB-D information directly which results in
+slightly misaligned frames. Therefore, to achieve better consistency among all RGB-D scans, we add an RGB-D term to 
+refine the camera poses in a second step.
+As the first step improved pose accuracy by exploiting loop closure event, 
+corresponding points between two frames can now be found using
 the fast projective data association algorithm \cite{rusinkiewicz2001efficient}.
-Two kinds of terms are added for each pair of corresponding 3D points from each pair of frames
-to minimize their 3D distances and image intensity difference.
+For each pair of corresponding 3D points from each pair of frames, two minimization terms are added: one 
+for their 3D distance and one for their image intensity difference.
 
-We use a common notation: $p_{nk}$ denotes $k^{th}$ 3D point of 
-the $n^{th}$ frame. So the cost function responsible for the shape consistency is
-a sum of the ICP odometry terms:
+The cost function responsible for the shape 
+consistency is a sum of the ICP odometry terms:
 \begin{equation} \label{eq:ficp}
     F_{ICP}(x_{1:N}) = \sum_{n,m,i,j} \Delta p_{nmij}^T \Omega_{mj} \Delta p_{nmij},
 \end{equation}
 \begin{equation}
     \Delta p_{nmij}=(p_{ni} \oplus x_n) \ominus x_m - p_{mj},
 \end{equation}
-where the summation is done over all corresponding points, $\oplus$ is 
+where the summation is done over all corresponding points, $p_{nk}$ is the $k^{th}$ 3D point of 
+the $n^{th}$ frame, $\oplus$ is 
 the compounding operator \cite{lu1997globally} and $\Omega_{mj}$ is 
 the information matrix that results in the point-to-plane 
-distances in \eqref{eq:ficp}.
+distances in Equation \eqref{eq:ficp}.
 %TODO clarify this?
 
 \begin{figure}[t]
@@ -471,11 +471,10 @@ distances in \eqref{eq:ficp}.
                 \includegraphics[width=\linewidth]{../models/pr2_holes.png}
                 \caption{}
         \end{subfigure}
-        \caption{Example of a problem with holes in a model point cloud 
-        due to occlusions of object parts:
-        (a) PR2 head model from the viewpoint close to one of a camera poses,
-        (b) viewpoint that is lower than the camera trajectory: there is a hole under 
-        the top part of the head}
+        \caption{Example of hole problem due to self-occlusions:
+        (a) final PR2 head model as seen from one of the capture views,
+        (b) newly generate viewpoint that is lower than the original camera trajectory: a hole under 
+        the top part of the head is visible}
         \label{fig:pr2}
 \end{figure}
 
@@ -485,29 +484,28 @@ a sum of the RGB-D odometry terms:
 F_{RGBD}(x_{1:N}) = \\
 = \omega_{rgbd} \sum_{n,m,i} \biggl[I_n(\pi p_{ni}) - I_m\Bigl(\pi \bigl((p_{ni} \oplus x_n) \ominus x_m\bigr)\Bigr) \biggr]^2,
 \end{multline}
-where $I_n$ is an intensity image of $n$-th frame, $\pi$ is an image projection function, $\omega_{rgbd}$
+where $I_n$ is the intensity image of the $n$-th frame, $\pi$ is an image projection function, $\omega_{rgbd}$
 is a weight of the RGB-D term.
 
-So the following function is minimized at the second step:
+To summarize, the following function is minimized during the second step:
 \begin{equation} \label{eq:fsecond}
 F_{SE3}(x_{1:N}) + F_{ICP}(x_{1:N}) + F_{RGBD}(x_{1:N}).
 \end{equation}
 
-In order to increase basin of convergence 
-we minimize \eqref{eq:fsecond} using a coarse-to-fine scheme 
-like often done for visual odometry algorithms. 
-We recompute correspondences between frames
+In order to increase the basin of convergence,
+we minimize Equation \eqref{eq:fsecond} using a coarse-to-fine approach:
+we recompute correspondences between frames
 after each iteration of each pyramid level.
 
 The optimization of the function \eqref{eq:fsecond} is run 
-twice for different points. The first time the points of a table and an object are used  because 
-the textured table points give necessary constrains in the case of symmetric and textureless object.
-The second time \eqref{eq:fsecond} is minimized using only object points to refine 
-camera poses relatively to interesting parts of scans only.
+twice for different points. The first time, the points of the table and object are used because 
+the textured table points give necessary constraints in the case of symmetric and textureless object.
+The second time, \eqref{eq:fsecond} is minimized using only object points to refine 
+camera poses relatively to the interesting parts of the scans only.
 
-We get accurate camera poses and scans aligned properly 
-as rigid bodies after the second step. But there is camera noise in depth measurements and small 
-misalignment of scans due to it. The third step produces a final accurate model by
+The second optimization step gave accurate camera poses and properly aligned scans
+as rigid bodies but the depth measurement noise gave some misalignment. The third step we propose produces a 
+final accurate model by
 simultaneous optimization of object points coordinates and camera poses.
 
 This step exploits the idea of \cite{ruhnke2012highly} but our version 
@@ -517,38 +515,38 @@ is simplified due to the previous steps:
  \item As we already have well-aligned scans at this stage, we can apply 
  the fast projective algorithm \cite{rusinkiewicz2001efficient} 
  (with filtering by differences in depth values, 
- normals and intensity) to find correspondences instead of slower
- normal-shooting method which \cite{ruhnke2012highly} uses.
+ normals and intensity) to find correspondences instead of the slower
+ normal-shooting method from \cite{ruhnke2012highly}.
  %TODO add a direct link to the normal-shooting?
  \item We consider each object 3D point of each frame as 
  a surfel centered in this point, i.e. the number of surfels corresponding to a frame
  is equal to the number of object pixels in the frame. 
- We don't aim for large space model refinement as \cite{ruhnke2012highly}
- so it is not necessary for us to use a more compact scan surface representation by covering several pixels 
+ We don't aim for large space model refinement as in \cite{ruhnke2012highly}:
+ it is therefore not necessary for us to use a more compact scan surface representation by covering several pixels 
  by one surfel.
- \item After the surfel 3D position is refined we update only depth value 
- in the original pixel of a frame depth map. This conforms with the purpose to 
- refine noisy depth measurements using information from other scans.
+ \item After the surfel 3D position is refined, we only update the depth value 
+ of a pixel in the original pixel depth map. This conforms with the purpose of
+ refining noisy depth measurements using information from other scans.
 \end{itemize}
 
 With these remarks the error function for the surfel positions refinement 
 $F_{model}(x_{1:N}, M)$ (where $M$ is a set of 3D points from 
 all frames) in our approach is the same as formula (11) in \cite{ruhnke2012highly}.
 
-So the following function is minimized at the third step:
+To summarize the third step, we minimize the following function:
 \begin{multline} \label{eq:fthird}
 F_{SE3}(x_{1:N}) + F_{ICP}(x_{1:N}) + F_{RGBD}(x_{1:N}) + \\
 + F_{model}(x_{1:N}, M).
 \end{multline}
 
 After \eqref{eq:fthird} is minimized we filter out the points 
-that don't have correspondences or have a small number of correspondences (less than 3 ones) in
+that have no or few (less than 3) correspondences in
 all other frames because they were not refined or the refinement result
 is unreliable due to a small number of used correspondences.
 
 In order to solve the least squares optimization problems 
 of the three steps \eqref{eq:ffirst}, \eqref{eq:fsecond} and \eqref{eq:fthird} 
-we formulated them as graph-based optimization tasks.
+we formulate them as graph-based optimization tasks.
 These tasks are solved by applying the g2o framework 
 \cite{kuemmerle2011g2o} which exploits sparseness of the graph structure.
 
@@ -657,7 +655,7 @@ accurate models.
 The code of the system is available as open-source at
 \href{http://bit.ly/reconst3d}{http://bit.ly/reconst3d}.
 
-\addtolength{\textheight}{-12cm}   % This command serves to balance the column lengths
+\addtolength{\textheight}{-11cm}   % This command serves to balance the column lengths
                                   % on the last page of the document manually. It shortens
                                   % the textheight of the last page by a suitable amount.
                                   % This command does not take effect until the next page
