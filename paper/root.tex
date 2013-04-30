@@ -484,7 +484,7 @@ distances in Equation \eqref{eq:ficp}.
         \end{subfigure}
         \caption{Example of hole problem due to self-occlusions:
         (a) final PR2 head model as seen from one of the capture views,
-        (b) newly generate viewpoint that is lower than the original camera trajectory: a hole under 
+        (b) newly generated viewpoint that is lower than the original camera trajectory: a hole under 
         the top part of the head is visible}
         \label{fig:pr2}
 \end{figure}
@@ -504,8 +504,9 @@ F_{SE3}(x_{1:N}) + F_{ICP}(x_{1:N}) + F_{RGBD}(x_{1:N}).
 \end{equation}
 
 In order to increase the basin of convergence,
-we minimize Equation \eqref{eq:fsecond} using a coarse-to-fine approach:
-we recompute correspondences between frames
+we minimize Equation \eqref{eq:fsecond} using a coarse-to-fine approach.
+% It is not the defininition of our coarse-to-fine approach, it is just a remark
+The correspondences between frames are recomputed
 after each iteration of each pyramid level.
 
 The optimization of the function \eqref{eq:fsecond} is run 
@@ -515,7 +516,7 @@ The second time, \eqref{eq:fsecond} is minimized using only object points to ref
 camera poses relatively to the interesting parts of the scans only.
 
 The second optimization step gave accurate camera poses and properly aligned scans
-as rigid bodies but the depth measurement noise gave some misalignment. The third step we propose produces a 
+as rigid bodies but the depth measurement noise gave some misalignment. The third step produces a 
 final accurate model by
 simultaneous optimization of object points coordinates and camera poses.
 
@@ -527,7 +528,8 @@ is simplified due to the previous steps:
  the fast projective algorithm \cite{rusinkiewicz2001efficient} 
  (with filtering by differences in depth values, 
  normals and intensity) to find correspondences instead of the slower
- normal-shooting method from \cite{ruhnke2012highly}.
+% Ruhnke didn't propse this method, he just uses it
+ normal-shooting method that \cite{ruhnke2012highly} uses.
  %TODO add a direct link to the normal-shooting?
  \item We consider each object 3D point of each frame as 
  a surfel centered in this point, i.e. the number of surfels corresponding to a frame
