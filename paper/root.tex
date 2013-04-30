@@ -52,8 +52,8 @@ Tabletop Object Scanning with an RGB-D Sensor*
 \thanks{*This work was supported by Willow Garage, Inc.}% <-this % stops a space
 \thanks{$^{1}$M. Dimashova, I. Lysenkov and V. Eruhimov are with Itseez, Nizhny Novgorod, Russia
         {\tt\small \{maria.dimashova, ilya.lysenkov, victor.eruhimov\}@itseez.com}}%
-\thanks{$^{2}$V. Rabaud is with Willow Garage, Menlo Park, California, USA {\tt\small vrabaud@willowgarage.com}}%
-%\TODO fill Vincent's info
+\thanks{$^{2}$V. Rabaud is with Aldebaran Robotics, Paris, France but part of this work was done while the author was 
+at Willow Garage, Menlo Park, California, USA {\tt\small vrabaud@aldebaran-robotics.com}}%
 }
 
 
@@ -102,8 +102,9 @@ in a domestic environment and that can require robotic manipulation, for example
 kitchenware, children's toys and small pieces of furniture to name a few.
 
 To acquire several views of an object, a robot can either move it, or move around it. In-hand scanning faces the problems
-of automatic object segmentation and possible mis-registration of symmetric object scans. To help with the segmentation process
-\cite{weise2011online} uses black gloves in front of a black curtain but such setup is usually too restrictive.
+of automatic object segmentation and possible mis-registration of symmetric object scans. To help with the segmentation 
+process,
+\cite{weise2011online} uses black gloves in front of a black curtain: such setup is usually too restrictive.
 Moreover, just like in an earlier similar approach \cite{rusinkiewicz2002real}, the symmetry problem is not solved in this work.
 \cite{krainin2011manipulator} overcomes both problems successfully but
 they use the pose knowledge from the robot manipulator holding the object.
@@ -172,7 +173,7 @@ hard or impossible for a robot.
 Our setup also requires 
 texture on a plane but does not track feature, hence does not require a training stage.
 The table texture is used for the camera motion estimation 
-with the state-of-the-art dense RGB-D odometry algorithm from \cite{steinbrucker2011real} 
+with state-of-the-art dense RGB-D odometry algorithm from \cite{steinbrucker2011real}.
 We cannot ignore texture because depth-based
 techniques for camera motion estimation like ICP \cite{besl1992method} 
 are not reliable in our setup with a dominant plane \cite{rusinkiewicz2001efficient}.
@@ -186,7 +187,7 @@ an object segmentation problem with possible object occlusions.
 Finally, KinectFusion also smoothes captured surfaces too much: \cite{meister2012when} measured that
 the system ``can resolve object details with a minimum size of approximately 10mm''.
 
-An other recent approach \cite{stuckler2012model} for 3D model learning 
+Another recent approach \cite{stuckler2012model} for 3D model learning 
 exploits both RGB and depth information to estimate a camera pose 
 in relation to an aggregated scene model represented by the multi-resolution surfels map.
 Using RGB data can allow this method to get stable pose estimation
@@ -218,47 +219,37 @@ about the supported scanning setup and both RGB and depth
 data to produce initial alignment of scans as rigid bodies
 and then refine it by such optimization non-rigidly.
 
-In this paper provides a complete pipeline for object scanning in
-a simple tabletop setup: a plane, to deal with for object segmentation, with texture,
-to deal with camera pose estimation and potential object symmetries. It is also general enough
-to be used by a person or a robot. A base of 42 objects was
-scanned successfully by a PR2 robot, a person with a hand-held camera 
-and using a turntable (see examples of scanning setups 
-in Fig.~\ref{fig:tizer}).
+We present an overview of the pipeline in Section \ref{sec:overview} and then detail the online and offline stages in 
+Sections \ref{sec:online} and \ref{sec:offline}. Finally, we present results in Section \ref{sec:experiments} of
+objects that got successfully scanned from a PR2 robot and a person using a hand-held camera with a Lazy Susan (see 
+examples of scanning setups in Fig.~\ref{fig:tizer}).
 
 
 \section{OVERVIEW OF THE SCANNING PIPELINE}
 
-The goal of our scanning pipeline is to produce an accurate 3D model
-of an object captured by a person or a robot.
-In order to achieve this goal, we
-impose restrictions on the scanning setup and process: it should be
-one turn of an RGB-D camera around a textured table with an object. 
+\label{sec:overview}
 
-A textured table allows solving the following problems:
+We introduced our setup earlier but we now explain it in detail.
+
+First, we choose a textured table because it solves the following issues:
 
 \begin{itemize}
 
-\item \textit{Automatic object segmentation}. It is easy to find the table plane
-in a scene and segment an object placed on the table using RGB-D data.
-\item \textit{Stable camera pose estimation}. Due to the presence of texture
-a state-of-the-art RGB-D visual odometry algorithm can be applied.
-Alternative dense visual odometry methods based only on depth measurements
-like ICP are not reliable in a scene with a prevalent plane \cite{rusinkiewicz2002real}
-because such algorithms need rich 3D structures for registration but a plane is too homogeneous
-(it is like trying to match textureless objects by looking for textured 2D features).
-Both dense approaches
-assume a static scene and they can tolerate only slight movements in the scene.
-So to obtain a stable camera motion estimation we run the odometry using only
-%TODO: replace "can be considered static" with "are static"
-points of the table and the object because they can be considered static.
-It allows applying the algorithm in dynamic scenes where there are moving objects e.g. people, pets or robots.
-\item \textit{Scanning symmetric textureless objects}. Registration of scans for such an object
-is most likely to fail if it uses object points only. So an object pose should be known beforehand like in \cite{krainin2011manipulator}
-or some part of a scene with
-texture or 3D features should also be used to add sufficient constraints.
-Textured table is exploited for this purpose in our pipeline
-and so the algorithm is able to create models of symmetric textureless objects.
+\item \textit{Automatic object segmentation}. It is easy to find a table plane and segment an object on top of 
+it using RGB-D data.
+\item \textit{Stable camera pose estimation}. Dense visual odometry methods only based on depth measurements,
+like ICP, are not reliable in a scene with a prevalent plane \cite{rusinkiewicz2002real}
+because planes lack a rich 3D structure (it is like trying to match textureless objects by looking for textured 2D 
+features). That is why we focus on RGB-D visual odometry instead. Nonetheless, both dense approaches
+assume a static scene and can only tolerate slight amounts of noise in movement or environment motion. Therefore,
+to obtain a stable camera motion estimation, we run dense odometry with a mask leaving out points that are not on 
+the the table or object. That also helps us deal with dynamic scenes where there are moving objects e.g. people, pets or 
+robots.
+\item \textit{Scanning symmetric textureless objects}. Registration of scans for such objects
+is most likely to fail if it only uses feature points. In order to resolve ambiguities, pose should be known 
+beforehand, like in \cite{krainin2011manipulator},
+or constraints should be created using some part of a scene with
+2D/3D texture. We exploit the plane texture to this end.
 \end{itemize}
 
 %TODO: put somewhere?
@@ -266,80 +257,58 @@ and so the algorithm is able to create models of symmetric textureless objects.
 %to get a loop closure in a trajectory which is used to compensate a drift
 %of an odometry.
 
-One turn around the table simplifies loop closure detection and poses graph construction
-in contrast to an arbitrary camera trajectory.
-Hence it makes the algorithm more robust because setting incorrect associations
+Next, we decide to only make one turn around the table to simplify loop closure detection and pose graph construction as
+setting incorrect associations
 in the graph can lead to catastrophic implications in the offline graph
-optimization \cite{sunderhauf2012switchable}.
+optimization \cite{sunderhauf2012switchable}
 However, a complex object may require a more complicated trajectory
-or merging several scans together to capture all parts of the object %TODO: ref
-and this is a direction for future work.
+or merging several scanning session together, %TODO: ref
+but this is a direction for future work.
 
-Our pipeline consists of online and offline stages. The online part is the capture of RGB-D data,
+Our pipeline then consists of an online and an offline stage. The online part is the capture of RGB-D data,
 initial estimation of camera poses using frame-to-frame odometry,
-selection of keyframes set, detection of loop closure. The offline part is aimed for
-the global refinement of camera poses and model points. There are three stages
-of the offline refinement:
-
-\begin{enumerate}
-\item At first we seek the configuration of camera poses that is
-maximally consistent to the pure odometry estimations without 
-considering the RGB-D frames data. The input camera poses of this stage
-are estimated by frame-to-frame odometry and this produces drift: 
-the farther a camera pose is from the starting position of the trajectory, 
-the larger the error of its estimation becomes. The drift is compensated
-by applying the constraint from the detected loop closure 
-that redistributes the accumulated error among the poses evenly.
-
-\item Then we refine the camera poses to achieve 
-consistency of corresponding RGB-D scans as rigid bodies.
-
-\item The last stage is mainly for the refinement of model points. It uses the idea similar to \cite{ruhnke2012highly}
-that considers individual scans as non-rigid bodies and optimizes
-model points and camera poses simultaneously to achieve highly accurate alignment.
-
-\end{enumerate}
+selection of keyframes and detection of loop closure. The offline part performs
+global refinement of camera poses and model points.
 
 \section{ONLINE STAGE}
 
-This stage is performed during the capture of RGB-D data. It includes
-frame-to-frame estimation of camera poses, selection of keyframes and 
-detection of loop closure.
+\label{sec:online}
+
+This stage is a real-time set of computations performed during the capture of RGB-D data to prepare computations for 
+the offline stage.
 
 We use the dense RGB-D visual odometry
-method \cite{steinbrucker2011real} for the camera motion estimation.
+method from \cite{steinbrucker2011real} for the camera motion estimation.
 It is accurate and fast enough to apply it online
 (execution time of 12.5Hz is reported in \cite{steinbrucker2011real}
 on a single Intel Xeon E5520 CPU).
 Our open-source implementation\footnote{\label{note1}\href{http://bit.ly/rgbd\_module}{http://bit.ly/rgbd\_module}} of this algorithm
 introduces optimization which allows it to work at 23Hz on one core
 of Intel Core i5 without using SSE.
-It is achieved by using only points with high gradient in the target intensity image
+It is achieved by only using patches with high gradient in the target intensity image
 to compute odometry (the same idea was proposed in \cite{tykkala2011direct} for another odometry algorithm).
-Other points provide less information for alignment
-and so they can be ignored without loss in accuracy of the RGB-D odometry algorithm
-as we checked using the TUM RGB-D benchmark \cite{sturm12iros}.
+Other areas provide less information for alignment
+and can be ignored without loss of accuracy; we performed benchmarks 
+using the TUM RGB-D benchmark \cite{sturm12iros} that corroborated that choice.
 % TODO prove it? it's easy to provide results on TUM, but this in not our main goal.  
 
-The RGB-D odometry method assumes absence of motion in a scene and it is not
-robust to large movement in the scene. So to satisfy this requirement
-and keep stability of the odometry we run it only
-on the points of a table and an object. The mask of table points
+RGB-D odometry methods assume absence of motion in a scene which makes them not
+robust to large movements. To cope with this problem and keep stability, we run only run odometry
+on the points of the table and the object. The mask of table points
 is found in real-time using an approach from \cite{poppinga2008fast}. An object mask is
 obtained by extracting points in a virtual 3D prism above the table \cite{rusu2009detecting}.
 Using only the points
 of a table and an object in the camera pose estimation brings one more advantage:
 moving a camera around a fixed table becomes equivalent to rotating
-a table in front of a fixed camera. So our system covers a scanning setup with a turntable too
-and we provide experiments both with a hand-held sensor and a turntable.
+a table in front of a fixed camera. Our system consequently covers the scanning setup of a hand-held sensor with a 
+turntable as we will see in the experiments.
 
 It is still possible to get an incorrect pose from RGB-D odometry
-because of light changes and motion blur from hand jitter.
-We filter out such outliers:
+because of light changes or motion blur from hand jitter. We filter out such outliers in the following ways:
 
 \begin{enumerate}
  \item If a returned transformation between two frames is outside the basin of convergence
- of the RGB-D odometry (about 15cm and 15 degrees in our experiments) most likely it is an outlier.
+ of the RGB-D odometry (about 15cm and 15 degrees in our experiments), it is most likely an outlier.
  \item We also warp a source frame using an estimated transformation,
  compute the difference between target and warped frames 
  and filter the transformation out if
@@ -347,19 +316,14 @@ We filter out such outliers:
 \end{enumerate}
 
 %TODO: is there a backward search for a valid transformation?
-A pose of each new frame is estimated relatively to the last frame
+A pose for each new frame is estimated relatively to the last frame
 with a valid transformation from the odometry.
-
-%TODO: need more details
-A keyframes set is selected during the capture.
-The used criterion is translation and rotation thresholds 
-between a current frame and the last keyframe.
 
 The frame-to-frame estimation of camera poses from the RGB-D 
 odometry results in a drift. It is usually not too large in our case
 due to high accuracy of the used odometry method \cite{steinbrucker2011real}
-and only one turn around a table.
-But it still should be compensated and the loop closure event is detected to solve this problem.
+and only one loop around the object.
+Still, it should be compensated and we use loop closure to this end.
 %TODO: how much is "large enough"?
 When the length of the trajectory is large enough, we begin to estimate the
 odometry transformation between each current frame and the starting one. 
@@ -368,7 +332,10 @@ this means the current pose is close to the first one and
 the trajectory has been closed. When the loop closure is detected 
 the capture is stopped.
 
-Thus each frame is passed through the steps:
+Finally, during capture, we keep track of key frames by analyzing the translation and rotation differences between a 
+current frame and the last keyframe.
+
+To summarize, each frame is passed through the steps:
 
 \begin{enumerate}
  \item plane and object segmentation,
@@ -381,16 +348,12 @@ We also should note that loop closure detection using the RGB-D odometry require
 the last pose of a camera to be in a basin of
 the algorithm convergence (about 15cm and 15 degrees) from the first pose. 
 To allow a larger difference between the first and the last frames
-another approach can be used in detection of loop closure, e.g.
-an often used method of matching visual features, like
-SIFT \cite{lowe2004distinctive}, SURF \cite{bay2006surf}, ORB \cite{rublee2011orb}.
-However, these feature detectors and descriptors failed to match even
-relatively close frames in our capturing setup of turning around a textured table.
-The reason is large affine distortions
-and these standard features are not fully affine invariant.
+another approach could be used in detection of loop closure. We tried to use visual descriptors, like
+SIFT \cite{lowe2004distinctive}, SURF \cite{bay2006surf}, ORB \cite{rublee2011orb}, but they failed to match even
+relatively close frames due to large affine distortions.
 ASIFT \cite{morel2009asift} was able to overcome this problem
-and perfectly coped with the task in our experiments,
-however, it has to be strongly optimized before its usage in an online application.
+and perfectly coped with the task in our experiments;
+it however has to be strongly optimized before its usage in an online application.
 
 The output of the online part is a set of consecutive keyframes with 
 estimated poses and the transformation between the first and the last 
@@ -398,6 +361,8 @@ keyframes from loop closure.
 
 
 \section{OFFLINE STAGE}
+
+\label{sec:offline}
 
 The purpose of the offline processing is refinement of the online-estimated 
 camera poses as well as points of scans to get a model maximally 
@@ -645,7 +610,9 @@ captured (see an example in Fig.~\ref{fig:gorgon}).
 \end{figure}
 
 \section{RESULTS}
- 
+
+\label{sec:experiments}
+
 The presented system was tested in three capturing scenarios:
 
 \begin{itemize}
