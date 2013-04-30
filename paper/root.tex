@@ -76,8 +76,9 @@ of initial camera motion estimation using RGB-D visual
 odometry and detection of loop closure in the trajectory. The offline part
 is graph-based global coarse-to-fine refinement of camera poses and model points.
 In addition to the usual geometric ICP constraints, we add
-RGB ones to make the scanning pipeline more stable in our specific case 
+RGB ones to make the scanning pipeline more stable in case 
 of planar and symmetric surfaces. 
+% With "in our specific case" it seems like we scan only planar and symmetric surfaces.
 
 The presented object reconstruction pipeline was tested using both a hand-held RGB-D sensor and a PR2 robot.
 As a result the algorithm successfully produced accurate models on a dataset of 42 household objects.
@@ -101,15 +102,16 @@ We consider rigid objects that can be encountered
 in a domestic environment and that can require robotic manipulation, for example:
 kitchenware, children's toys and small pieces of furniture to name a few.
 
-To acquire several views of an object, a robot can either move it, or move around it. In-hand scanning faces the problems
+To acquire several views of an object, a robot (or a person) can either move it, or move around it. In-hand scanning faces the problems
 of automatic object segmentation and possible mis-registration of symmetric object scans. To help with the segmentation 
 process,
 \cite{weise2011online} uses black gloves in front of a black curtain: such setup is usually too restrictive.
 Moreover, just like in an earlier similar approach \cite{rusinkiewicz2002real}, the symmetry problem is not solved in this work.
 \cite{krainin2011manipulator} overcomes both problems successfully but
 they use the pose knowledge from the robot manipulator holding the object.
-Such information is available neither in the human hand-held case 
-nor in the robot hand-held case of partly occluded symmetric objects.
+Such information is not available in the human hand-held case 
+especially in case of partly occluded symmetric objects.
+% it's available for robots
 Those limitations drive the setup of this paper: a single object lying on a flat surface,
 with a camera on a robot or hand-held.
 
@@ -163,15 +165,16 @@ A common object scanning setup is a table or a turntable with
 visual markers on it (e.g. chessboards or dot pattern) that
 are used for camera pose estimation and sometimes segmentation.
 \cite{ectoObjectRecognitionCapture} also 
-provides an option to replace special visual markers by arbitrary texture
-after a training stage:
+provides an option to replace special visual markers by arbitrary texture.
+But there is a training stage in this case:
+% replace visual markers after the training? -- it's ambiguous
 the user has to capture a canonical image of the empty table from
 a planar frontal view before scanning. Preparing the markers
 and the training stage for texture is inconvenient for a human and
 hard or impossible for a robot. 
 
 Our setup also requires 
-texture on a plane but does not track feature, hence does not require a training stage.
+texture on a plane but does not track features, hence does not require a training stage.
 The table texture is used for the camera motion estimation 
 with state-of-the-art dense RGB-D odometry algorithm from \cite{steinbrucker2011real}.
 We cannot ignore texture because depth-based
@@ -221,7 +224,7 @@ and then refine it by such optimization non-rigidly.
 
 We present an overview of the pipeline in Section \ref{sec:overview} and then detail the online and offline stages in 
 Sections \ref{sec:online} and \ref{sec:offline}. Finally, we present results in Section \ref{sec:experiments} of
-objects that got successfully scanned from a PR2 robot and a person using a hand-held camera with a Lazy Susan (see 
+objects that got successfully scanned from a PR2 robot and a person using a hand-held camera or a Lazy Susan (see 
 examples of scanning setups in Fig.~\ref{fig:tizer}).
 
 
@@ -246,7 +249,9 @@ to obtain a stable camera motion estimation, we run dense odometry with a mask l
 the the table or object. That also helps us deal with dynamic scenes where there are moving objects e.g. people, pets or 
 robots.
 \item \textit{Scanning symmetric textureless objects}. Registration of scans for such objects
-is most likely to fail if it only uses feature points. In order to resolve ambiguities, pose should be known 
+is most likely to fail if it only uses object points. In order to resolve ambiguities, pose should be known 
+% Why feature points? In this case we lose an accent object points ONLY (without a table). 
+
 beforehand, like in \cite{krainin2011manipulator},
 or constraints should be created using some part of a scene with
 2D/3D texture. We exploit the plane texture to this end.
@@ -293,7 +298,7 @@ using the TUM RGB-D benchmark \cite{sturm12iros} that corroborated that choice.
 % TODO prove it? it's easy to provide results on TUM, but this in not our main goal.  
 
 RGB-D odometry methods assume absence of motion in a scene which makes them not
-robust to large movements. To cope with this problem and keep stability, we run only run odometry
+robust to large movements. To cope with this problem and keep stability, we only run odometry
 on the points of the table and the object. The mask of table points
 is found in real-time using an approach from \cite{poppinga2008fast}. An object mask is
 obtained by extracting points in a virtual 3D prism above the table \cite{rusu2009detecting}.
