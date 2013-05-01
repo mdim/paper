@@ -212,7 +212,7 @@ cameras, e.g. \cite{stuckler2012integrating},
 \cite{endres2012evaluation}, \cite{henry2012rgb}, \cite{strasdat2011double}. Such approaches are more geared
 towards long-lasting navigation and large space mapping while we only focus on relatively small objects.
 Also, many of them aim at
-real-time runtime on a robot, and they can therefore only afford alignment of scans 
+real-time runtime on a robot, and they can therefore afford alignment of scans 
 as rigid-bodies only. 
 
 The recent work in \cite{ruhnke2012highly} introduced a post-processing procedure for the output of SLAM systems
@@ -274,7 +274,7 @@ Next, we decide to only make one turn around the table to simplify loop closure 
 setting incorrect associations
 in the graph can lead to catastrophic implications in the offline graph
 optimization \cite{sunderhauf2012switchable}.
-However, a complex object like in Figure \ref{fig:pr2}) may require a more complicated trajectory
+However, a complex object like in Figure \ref{fig:pr2} may require a more complicated trajectory
 or merging several scanning session together, %TODO: ref
 but this is a direction for future work.
 
@@ -288,7 +288,7 @@ global refinement of camera poses and model points given the initial estimate of
 
 \label{sec:online}
 
-This stage is a real-time set of computations performed during the capture of RGB-D data to prepare computations for 
+This stage is a real-time set of computations performed during the capture of RGB-D data to initialize 
 the offline stage.
 
 We use the dense RGB-D visual odometry
@@ -302,12 +302,11 @@ of Intel Core i5 without using SSE.
 It is achieved by only using patches with high gradient in the target intensity image
 to compute odometry (the same idea was proposed in \cite{tykkala2011direct} for another odometry algorithm).
 Other areas provide less information for alignment
-%TODO (for Vincent): "performed benchmarks using the .. benchmark" -- is it OK?
 and can be ignored without loss of accuracy; we performed benchmarks 
-using the TUM RGB-D benchmark \cite{sturm12iros} that corroborated that choice.
+using the TUM RGB-D datasets \cite{sturm12iros} that corroborated that choice.
 % TODO prove it? it's easy to provide results on TUM, but this in not our main goal.  
 
-The RGB-D odometry method assumes absence of motion in a scene which makes them not
+The RGB-D odometry method assumes absence of motion in a scene which makes it not
 % There can exist RGB-D odometry methods that deal with motion.
 robust to large movements. To cope with this problem and keep stability, we only run odometry
 on the points of the table and the object. The mask of table points
@@ -362,7 +361,7 @@ To summarize, each frame is passed through the steps:
 
 We also should note that loop closure detection using the RGB-D odometry requires
 the last pose of a camera to be in a basin of
-the algorithm convergence (also about 15cm and 15 degrees) from the first pose. 
+the algorithm convergence (about 15cm and 15 degrees as we mentioned earlier) from the first pose. 
 To allow a larger difference between the first and the last frames
 another approach could be used in detection of loop closure. We tried to use visual descriptors, like
 SIFT \cite{lowe2004distinctive}, SURF \cite{bay2006surf}, ORB \cite{rublee2011orb}, but they failed to match even
@@ -494,7 +493,7 @@ distances in \eqref{eq:ficp}.
 \end{figure}
 
 The cost function responsible for the intensity consistency is
-a sum of the RGB-D odometry terms:
+the sum of the RGB-D odometry terms:
 \begin{multline} \label{eq:frgbd}
 F_{RGBD}(x_{1:N}) = \\
 = \omega_{rgbd} \sum_{n,m,i} \biggl[I_n(\pi p_{ni}) - I_m\Bigl(\pi \bigl((p_{ni} \oplus x_n) \ominus x_m\bigr)\Bigr) \biggr]^2,
